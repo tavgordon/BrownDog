@@ -1,26 +1,36 @@
-﻿using BrownDog.Domain.PetContext.Aggregates.DogAggregate;
+﻿using BrownDog.Domain;
+using BrownDog.Domain.PetContext.Aggregates.DogAggregate;
 using BrownDog.Domain.PetContext.Aggregates.PetOwnerAggregate;
+using BrownDog.Domain.PetContext.Services;
+using FluentResults;
 
 namespace BrownDog.Application;
 
 public class PetDogCommandHandler
 {
-    private readonly IDogRepository _dogRepository;
-    private readonly IPetOwnerRepository _petOwnerRepository;
+    private readonly IAggregateRepository<Dog> _dogRepository;
+    private readonly IAggregateRepository<PetOwner> _petOwnerRepository;
+    private readonly IPettingService _pettingService;
 
-    public PetDogCommandHandler(IPetOwnerRepository petOwnerRepository, IDogRepository dogRepository)
+    public PetDogCommandHandler(
+        IAggregateRepository<PetOwner> petOwnerRepository,
+        IAggregateRepository<Dog> dogRepository,
+        IPettingService pettingService)
     {
         _petOwnerRepository = petOwnerRepository;
         _dogRepository = dogRepository;
+        _pettingService = pettingService;
     }
 
-    public void Handle(PetDogCommand command)
+    public Result Handle(PetDogCommand command)
     {
-        var dog = _dogRepository.Load(command.DogId);
-        var petOwner = _petOwnerRepository.Load(command.IdentityId);
+        var dogResult = _dogRepository.Load(command.DogId);
 
-        petOwner.Pet(dog);
+        if (dogResult.IsFailed)
+        {
+            return dogResult.ToResult();
+        }
 
-        _dogRepository.Save(dog);
+        return _pettingService.PetDog(command.IdentityId, dogResult.Value);
     }
 }

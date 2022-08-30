@@ -10,6 +10,7 @@ public record Identity : IAggregateRoot
         Role = role;
     }
 
-    public Guid Id { get; }
     public Role Role { get; }
+
+    public Guid Id { get; }
 }

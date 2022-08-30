@@ -11,9 +11,10 @@ public record Dog : IAggregateRoot
         Breed = breed;
     }
 
-    public Guid Id { get; }
     public Breed Breed { get; }
     public Guid? LastPettedByOwnerId { get; private set; }
+
+    public Guid Id { get; }
 
     internal void Pet(PetOwner owner)
     {
